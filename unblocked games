@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Unblocked Games</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #111827;
+      --accent: #38bdf8;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #020617, #0f172a);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 20px;
+      border-bottom: 1px solid #1f2933;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    header h1 {
+      font-size: 1.4rem;
+      margin: 0;
+      color: var(--accent);
+      cursor: pointer;
+    }
+
+    main {
+      padding: 24px;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    /* GAME GRID */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
+
+    .card img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      background: #000;
+    }
+
+    .card h3 {
+      padding: 12px;
+      font-size: 0.95rem;
+      text-align: center;
+      margin: 0;
+    }
+
+    /* GAME PAGE */
+    .game-container {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .back-btn {
+      background: none;
+      border: 1px solid #334155;
+      color: var(--text);
+      padding: 10px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      width: fit-content;
+    }
+
+    .back-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .iframe-wrapper {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: black;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+    }
+
+    .iframe-wrapper iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1 onclick="goHome()">Unblocked Games</h1>
+</header>
+
+<main>
+  <!-- GAME LIST -->
+  <section id="gameList" class="grid"></section>
+
+  <!-- GAME PAGE -->
+  <section id="gamePage" class="game-container">
+    <button class="back-btn" onclick="goHome()">← Back to games</button>
+    <h2 id="gameTitle"></h2>
+    <div class="iframe-wrapper" id="gameFrame"></div>
+  </section>
+</main>
+
+<footer>
+  Simple. Fast. Unblocked.
+</footer>
+
+<script>
+  const GAME_JSON_URL =
+    "https://raw.githubusercontent.com/swarmintelli/Unblocked-Games-CDN/main/games.json";
+
+  const gameListEl = document.getElementById("gameList");
+  const gamePageEl = document.getElementById("gamePage");
+  const gameTitleEl = document.getElementById("gameTitle");
+  const gameFrameEl = document.getElementById("gameFrame");
+
+  let games = [];
+
+  fetch(GAME_JSON_URL)
+    .then(res => res.json())
+    .then(data => {
+      games = data;
+      renderGameList();
+      handleRouting();
+    })
+    .catch(err => {
+      gameListEl.innerHTML = "<p>Failed to load games.</p>";
+      console.error(err);
+    });
+
+  function renderGameList() {
+    gameListEl.innerHTML = "";
+    games.forEach((game, index) => {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.onclick = () => openGame(index);
+
+      card.innerHTML = `
+        <img src="${game.game_image_icon}" alt="${game.name}">
+        <h3>${game.name}</h3>
+      `;
+
+      gameListEl.appendChild(card);
+    });
+  }
+
+  function openGame(index) {
+    location.hash = "game=" + index;
+  }
+
+  function goHome() {
+    location.hash = "";
+  }
+
+  function handleRouting() {
+    const hash = location.hash;
+
+    if (hash.startsWith("#game=")) {
+      const index = hash.split("=")[1];
+      const game = games[index];
+
+      if (!game) return goHome();
+
+      gameListEl.style.display = "none";
+      gamePageEl.style.display = "flex";
+      gameTitleEl.textContent = game.name;
+      gameFrameEl.innerHTML = game.iframe;
+    } else {
+      gameListEl.style.display = "grid";
+      gamePageEl.style.display = "none";
+      gameFrameEl.innerHTML = "";
+    }
+  }
+
+  window.addEventListener("hashchange", handleRouting);
+</script>
+
+</body>
+</html>
